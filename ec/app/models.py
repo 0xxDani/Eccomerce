@@ -113,97 +113,111 @@ STATUS_CHOICES = (
     ('Pendiente','Pendiente'),
 )
 
+from django.db import models
+from django.contrib.auth.models import User
+
+# Clase Product: Representa los productos disponibles en la tienda.
 class Product(models.Model):
-    titulo_producto = models.CharField(max_length=100)
-    precio_venta = models.FloatField()
-    precio_con_descuento = models.FloatField()
-    descripcion = models.TextField()
-    referencia = models.TextField(default='')
-    pais_origen = models.CharField(choices=COUNTRY_CHOICES, max_length=60)
-    categoria = models.CharField(choices=CATEGORY_CHOICES, max_length=2)
-    imagen_producto = models.ImageField(upload_to='product')
+    titulo_producto = models.CharField(max_length=100)  # Nombre del producto
+    precio_venta = models.FloatField()  # Precio original del producto
+    precio_con_descuento = models.FloatField()  # Precio con descuento aplicado
+    descripcion = models.TextField()  # Descripción detallada del producto
+    referencia = models.TextField(default='')  # Referencia o código del producto
+    pais_origen = models.CharField(choices=COUNTRY_CHOICES, max_length=60)  # País de origen del producto
+    categoria = models.CharField(choices=CATEGORY_CHOICES, max_length=2)  # Categoría del producto
+    imagen_producto = models.ImageField(upload_to='product')  # Imagen del producto
 
     class Meta:
-        verbose_name_plural = "Productos"
+        verbose_name_plural = "Productos"  # Nombre plural en el panel de administración
 
     def __str__(self):
-        return self.titulo_producto
+        return self.titulo_producto  # Representación del producto por su título
 
+# Clase Customer: Representa a los clientes o administradores del sistema.
 class Customer(models.Model):
-    user = models.ForeignKey(User,on_delete=models.CASCADE)
-    nombre = models.CharField(max_length=200)
-    direccion = models.CharField(max_length=200)
-    telefono = models.IntegerField(default=0)
-    departamento = models.CharField(max_length=200)
-    identificacion = models.IntegerField()
-    ciudad = models.CharField(choices=STATE_CHOICES, max_length=100)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)  # Relación con el usuario de Django
+    nombre = models.CharField(max_length=200)  # Nombre del cliente
+    direccion = models.CharField(max_length=200)  # Dirección del cliente
+    telefono = models.IntegerField(default=0)  # Número de teléfono
+    departamento = models.CharField(max_length=200)  # Departamento del cliente
+    identificacion = models.IntegerField()  # Documento de identidad
+    ciudad = models.CharField(choices=STATE_CHOICES, max_length=100)  # Ciudad seleccionada
 
     class Meta:
-        verbose_name_plural = "Administradores"
+        verbose_name_plural = "Administradores"  # Nombre plural en el panel de administración
 
     def __str__(self):
-        return self.nombre
+        return self.nombre  # Representación del cliente por su nombre
 
+# Clase Cart: Representa el carrito de compras de un usuario.
 class Cart(models.Model):
-    user = models.ForeignKey(User,on_delete=models.CASCADE)
-    product = models.ForeignKey(Product,on_delete=models.CASCADE)
-    cantidad = models.PositiveIntegerField(default=1)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)  # Usuario propietario del carrito
+    product = models.ForeignKey(Product, on_delete=models.CASCADE)  # Producto en el carrito
+    cantidad = models.PositiveIntegerField(default=1)  # Cantidad del producto en el carrito
 
     class Meta:
-        verbose_name_plural = "Carrito de compras"
+        verbose_name_plural = "Carrito de compras"  # Nombre plural en el panel de administración
 
     @property
     def total_cost(self):
+        # Calcula el costo total para la cantidad de productos en el carrito
         return self.cantidad * self.product.precio_con_descuento
 
+# Clase Payment: Representa los detalles de pagos realizados por los usuarios.
 class Payment(models.Model):
-    user = models.ForeignKey(User,on_delete=models.CASCADE)
-    amount = models.FloatField()
-    razorpay_order_id = models.CharField(max_length=100,blank=True,null=True)
-    razorpay_payment_status = models.CharField(max_length=100,blank=True,null=True)
-    razorpay_payment_id = models.CharField(max_length=100,blank=True,null=True)
-    paid = models.BooleanField(default=False)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)  # Usuario que realizó el pago
+    amount = models.FloatField()  # Monto del pago
+    razorpay_order_id = models.CharField(max_length=100, blank=True, null=True)  # ID de la orden en Razorpay
+    razorpay_payment_status = models.CharField(max_length=100, blank=True, null=True)  # Estado del pago
+    razorpay_payment_id = models.CharField(max_length=100, blank=True, null=True)  # ID del pago en Razorpay
+    paid = models.BooleanField(default=False)  # Indica si el pago fue exitoso
 
     class Meta:
-        verbose_name_plural = "Pagos"
+        verbose_name_plural = "Pagos"  # Nombre plural en el panel de administración
 
+# Clase OrderPlaced: Representa los pedidos realizados por los clientes.
 class OrderPlaced(models.Model):
-    user = models.ForeignKey(User,on_delete=models.CASCADE)
-    customer = models.ForeignKey(Customer,on_delete=models.CASCADE)
-    product = models.ForeignKey(Product,on_delete=models.CASCADE)
-    cantidad = models.PositiveIntegerField(default=1)
-    fecha_orden = models.DateTimeField(auto_now_add=True)
-    status = models.CharField(max_length=50,choices=STATUS_CHOICES, default='Pendiente')
-    payment = models.ForeignKey(Payment,on_delete=models.CASCADE,default="")
+    user = models.ForeignKey(User, on_delete=models.CASCADE)  # Usuario que realizó el pedido
+    customer = models.ForeignKey(Customer, on_delete=models.CASCADE)  # Cliente asociado al pedido
+    product = models.ForeignKey(Product, on_delete=models.CASCADE)  # Producto pedido
+    cantidad = models.PositiveIntegerField(default=1)  # Cantidad del producto
+    fecha_orden = models.DateTimeField(auto_now_add=True)  # Fecha y hora del pedido
+    status = models.CharField(max_length=50, choices=STATUS_CHOICES, default='Pendiente')  # Estado del pedido
+    payment = models.ForeignKey(Payment, on_delete=models.CASCADE, default="")  # Pago asociado al pedido
 
     class Meta:
-        verbose_name_plural = "Pedidos Realizados"
+        verbose_name_plural = "Pedidos Realizados"  # Nombre plural en el panel de administración
+
     @property
     def total_cost(self):
+        # Calcula el costo total del pedido
         return self.cantidad * self.product.precio_con_descuento
 
+# Clase Wishlist: Representa la lista de deseos de los usuarios.
 class Wishlist(models.Model):
-    user = models.ForeignKey(User,on_delete=models.CASCADE)
-    product = models.ForeignKey(Product,on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)  # Usuario propietario de la lista
+    product = models.ForeignKey(Product, on_delete=models.CASCADE)  # Producto deseado
 
     class Meta:
-        verbose_name_plural = "Lista de seguimiento"
+        verbose_name_plural = "Lista de seguimiento"  # Nombre plural en el panel de administración
 
+# Clase ContactMessage: Representa mensajes enviados por los usuarios a través del formulario de contacto.
 class ContactMessage(models.Model):
-    nombre = models.CharField(max_length=100)
-    apellidos = models.CharField(max_length=100)
-    telefono = models.CharField(max_length=15)
-    celular = models.CharField(max_length=15)
-    indicativo = models.CharField(max_length=5)
-    identificacion = models.CharField(max_length=20)
-    tipo_caso = models.CharField(max_length=20)
-    asunto = models.CharField(max_length=200)
-    numero_factura = models.CharField(max_length=50)
-    descripcion = models.TextField()
+    nombre = models.CharField(max_length=100)  # Nombre del remitente
+    apellidos = models.CharField(max_length=100)  # Apellidos del remitente
+    telefono = models.CharField(max_length=15)  # Teléfono del remitente
+    celular = models.CharField(max_length=15)  # Celular del remitente
+    indicativo = models.CharField(max_length=5)  # Indicativo del país o región
+    identificacion = models.CharField(max_length=20)  # Documento de identidad
+    tipo_caso = models.CharField(max_length=20)  # Tipo de caso reportado
+    asunto = models.CharField(max_length=200)  # Asunto del mensaje
+    numero_factura = models.CharField(max_length=50)  # Número de factura asociado (si aplica)
+    descripcion = models.TextField()  # Descripción del caso o mensaje
 
     class Meta:
-        verbose_name_plural = "Mensajes de contacto"
+        verbose_name_plural = "Mensajes de contacto"  # Nombre plural en el panel de administración
 
     def __str__(self):
-        return f"{self.nombre} {self.apellidos}"
+        return f"{self.nombre} {self.apellidos}"  # Representación del mensaje por el nombre completo del remitente
+
 
