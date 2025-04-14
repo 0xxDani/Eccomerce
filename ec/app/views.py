@@ -71,7 +71,12 @@ class CategoryView(View):
             wishitem = len(Wishlist.objects.filter(user=request.user))
         product = Product.objects.filter(categoria=val)  # Filtra los productos por categoría
         titulo_producto = Product.objects.filter(categoria=val).values('titulo_producto')  # Obtiene los títulos de productos de la categoría
-        return render(request, "app/category.html", locals())  # Renderiza la plantilla de categoría
+        
+        # Pasar una bandera al template si no hay productos
+        categoria_vacia = not product.exists()
+        
+        return render(request, "app/category.html", locals())
+
 
 # Vista para la categoría de productos por título
 class CategoryTitle(View):
@@ -194,10 +199,17 @@ class UpdateAddress(View):
 @login_required
 def add_to_cart(request):
     user = request.user
-    product_id = request.GET.get('prod_id')  # Obtiene el ID del producto desde la solicitud GET
-    product = Product.objects.get(id=product_id)  # Obtiene el producto por su ID
-    Cart(user=user, product=product).save()  # Agrega el producto al carrito
-    return redirect("/cart")  # Redirige a la página del carrito
+    product_id = request.GET.get('prod_id')
+    try:
+        product = Product.objects.get(id=product_id)
+        cart_item, created = Cart.objects.get_or_create(user=user, product=product)
+        if not created:
+            cart_item.cantidad += 1
+            cart_item.save()
+    except Product.DoesNotExist:
+        raise Http404("El producto no existe.")
+    return redirect("/cart")
+
 
 # Vista para mostrar el carrito del usuario
 @login_required

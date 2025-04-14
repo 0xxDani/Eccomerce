@@ -1,46 +1,57 @@
-{% extends 'app/base.html' %}  <!-- Hereda la plantilla base de 'base.html' para reutilizar la estructura común de la página -->
+{% extends 'app/base.html' %} <!-- Hereda la plantilla base -->
 
-{% load static %}  <!-- Carga los archivos estáticos de Django, permitiendo que se utilicen imágenes, CSS, JS, etc. -->
+{% load static %} <!-- Carga archivos estáticos -->
 
-{% block title %}Categorías | Lili Fashion{% endblock title %}  <!-- Establece el título de la página, que aparecerá en la pestaña del navegador -->
+{% block title %}Categorías | Lili Fashion{% endblock title %}
 
-{% block main-content %}  <!-- Bloque principal que contiene el contenido específico de esta página -->
-    <div class="container my-5">  <!-- Contenedor principal con un margen vertical de 5 unidades -->
-        <div class="row">  <!-- Contenedor para organizar el contenido en una fila -->
-            
-            <!-- Columna para las categorías del producto (barra lateral) -->
-            <div class="col-sm-3">  <!-- Columna con un ancho de 3 partes en pantallas medianas y más grandes -->
-                <div class="list-group">  <!-- Lista de enlaces de categorías -->
-                    {% for val in titulo_producto %}  <!-- Itera sobre la lista 'titulo_producto' -->
-                        <a href="{% url 'category-title' val.titulo_producto %}" class="btn btn-custom-primary-2" aria-current="true">{{val.titulo_producto}}</a>
-                        <!-- Cada categoría se convierte en un enlace que redirige a una URL dinámica para esa categoría -->
-                    {% endfor %}
-                </div>
+{% block main-content %}
+    <div class="container-fluid vh-100 d-flex align-items-center justify-content-center bg-light">
+        {% if categoria_vacia %}
+            <div class="text-center">
+                <h2 class="text-dark fw-bold mb-3" style="font-size: 2.5rem;">
+                    Esta categoría no contiene productos.
+                </h2>
+                <p class="text-secondary" style="font-size: 1.2rem;">
+                    Por favor, explore otras categorías en nuestro sitio.
+                </p>
             </div>
-            
-            <!-- Columna para los productos (contenido principal) -->
-            <div class="col-sm-9">  <!-- Columna con un ancho de 9 partes en pantallas medianas y más grandes -->
-                <div class="row">  <!-- Contenedor de productos, organizados en filas -->
-                    {% for prod in product %}  <!-- Itera sobre la lista 'product' -->
-                    <div class="col text-center mb-4">  <!-- Cada producto ocupa una columna, centrado, con margen abajo -->
-                        <a href="{% url 'product-detail' prod.id %}" class="btn">  <!-- Enlace al detalle del producto -->
-                            <div>
-                                <img src="{{prod.imagen_producto.url}}" class="img-fluid" width="330px" height="230px">
-                                <!-- Imagen del producto con dimensiones fijas y adaptables a la pantalla -->
-                                <div class="fw-bold">{{prod.titulo_producto}}</div>  <!-- Título del producto en negrita -->
-                                <div class="fw-bold text-danger">  <!-- Precio con descuento en rojo -->
-                                    Rs.{{prod.precio_con_descuento}}/-  <!-- Precio con descuento -->
-                                    <small class="fw-light text-decoration-line-through">  <!-- Precio original tachado -->
-                                        {{prod.precio_venta}}
-                                    </small>
-                                </div>
-                            </div>
-                        </a>
+        {% else %}
+            <div class="container my-5">
+                <div class="row">
+                    <!-- Barra lateral de categorías -->
+                    <div class="col-sm-3">
+                        <div class="list-group">
+                            {% for val in titulo_producto %}
+                                <a href="{% url 'category-title' val.titulo_producto %}" class="btn btn-custom-primary-2" aria-current="true">
+                                    {{ val.titulo_producto }}
+                                </a>
+                            {% endfor %}
+                        </div>
                     </div>
-                    {% endfor %}
+                    
+                    <!-- Contenido principal de productos -->
+                    <div class="col-sm-9">
+                        <div class="row">
+                            {% for prod in product %}
+                                <div class="col text-center mb-4">
+                                    <a href="{% url 'product-detail' prod.id %}" class="btn">
+                                        <div>
+                                            <img src="{{ prod.imagen_producto.url }}" class="img-fluid" width="330px" height="230px">
+                                            <div class="fw-bold">{{ prod.titulo_producto }}</div>
+                                            <div class="fw-bold text-danger">
+                                                Rs.{{ prod.precio_con_descuento }}/-
+                                                <small class="fw-light text-decoration-line-through">
+                                                    {{ prod.precio_venta }}
+                                                </small>
+                                            </div>
+                                        </div>
+                                    </a>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
                 </div>
             </div>
-        </div>
+        {% endif %}
     </div>
-
-{% endblock main-content %}  <!-- Fin del bloque de contenido principal -->
+{% endblock main-content %}

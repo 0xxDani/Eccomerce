@@ -118,4 +118,4 @@ RAZOR_KEY_SECRET = 'VBaWeeL4qat7tGO9Dg6Wk9PF'  # Clave secreta de Razorpay
 
 # Configuración de PayPal
 PAYPAL_TEST = True  # Usamos el entorno de pruebas de PayPal
-PAYPAL_RECEIVER_EMAIL = 'sb-qzv0529127780@business.example.com'  # Correo electrónico del receptor de pagos de PayPal
+PAYPAL_RECEIVER_EMAIL = 'sb-0plnt29007470@business.example.com'  # Correo electrónico del receptor de pagos de PayPal
