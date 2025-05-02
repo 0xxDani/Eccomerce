@@ -1,3 +1,5 @@
+# ARCHIVO DE CONFIGURACIONES ESPECIALES DE ESTE CHICHARRÓNNN
+
 # Importamos Path para manejar rutas de archivos de manera más eficiente y flexible
 from pathlib import Path
 
@@ -14,6 +16,19 @@ DEBUG = True
 # Se usa * para usar Ngrok con PayPal y permitir que cualquier host pueda acceder.
 ALLOWED_HOSTS = ['*']
 
+# Configuración de Django REST Framework
+REST_FRAMEWORK = {
+    # Esto asegura que la vista acepta solicitudes en formato JSON
+    'DEFAULT_PARSER_CLASSES': [
+        'rest_framework.parsers.JSONParser',  # Parser para JSON
+    ],
+    # Esto asegura que la respuesta será en formato JSON
+    'DEFAULT_RENDERER_CLASSES': [
+        'rest_framework.renderers.JSONRenderer',  # Renderer para JSON
+    ],
+}
+
+
 # Lista de aplicaciones instaladas en el proyecto Django
 INSTALLED_APPS = [
     'django.contrib.admin',  # Aplicación para la administración del proyecto
@@ -25,6 +40,8 @@ INSTALLED_APPS = [
     'app',  # La aplicación principal del proyecto
     'paypal.standard.ipn',  # Integración con PayPal (IPN - Instant Payment Notification)
     'django_extensions',  # Extensiones útiles para el entorno de desarrollo de Django
+    'rest_framework', # Extención para la creación de las apis
+    'rest_framework.authtoken',
 ]
 
 # Middleware que define cómo se gestionan las solicitudes y respuestas del servidor
@@ -116,6 +133,9 @@ EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 RAZOR_KEY_ID = 'rzp_test_V3NdXPh72wKeN8'  # Clave pública de Razorpay
 RAZOR_KEY_SECRET = 'VBaWeeL4qat7tGO9Dg6Wk9PF'  # Clave secreta de Razorpay
 
+
 # Configuración de PayPal
 PAYPAL_TEST = True  # Usamos el entorno de pruebas de PayPal
 PAYPAL_RECEIVER_EMAIL = 'sb-0plnt29007470@business.example.com'  # Correo electrónico del receptor de pagos de PayPal
+
+

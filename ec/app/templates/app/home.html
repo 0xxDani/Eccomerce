@@ -271,7 +271,12 @@
         <div class="new-arrival">
             <a href="{% url 'product-detail' pk=producto.id %}">
                 <div class="new-arrival-img-container">
-                    <img src="{{ producto.imagen_producto.url }}" alt="{{ producto.titulo_producto }}">
+                    {% if producto.imagen_producto %}
+                        <img src="{{ producto.imagen_producto.url }}" alt="Imagen del producto">
+                    {% else %}
+                        <img src="{% static 'assets/images/product/new-default-image.jpg' %}" alt="Imagen por defecto">
+                    {% endif %}
+
                 </div>
                 <p class="new-arrival-text">{{ producto.titulo_producto }} - ${{ producto.precio_venta }}</p>
                 <hr class="custom-hr">

@@ -239,54 +239,29 @@ def show_wishlist(request):
     product = Wishlist.objects.filter(user=user)  # Obtiene los productos de la lista de deseos
     return render(request, "app/wishlist.html", locals())  # Renderiza la plantilla de lista de deseos
 
-# Usamos el decorador login_required para asegurarnos de que solo los usuarios autenticados puedan acceder a esta vista
 @method_decorator(login_required,name='dispatch')
 class checkout(View):
     def get(self,request):
-        # Inicializamos los contadores de artículos en el carrito y en la lista de deseos
         totalitem = 0
         wishitem = 0
-
-        # Verificamos si el usuario está autenticado y contamos los productos en el carrito y la lista de deseos
         if request.user.is_authenticated:
             totalitem = len(Cart.objects.filter(user=request.user))
             wishitem = len(Wishlist.objects.filter(user=request.user))
-
-        user = request.user  # Obtenemos el usuario actual
-        add = Customer.objects.filter(user=user)  # Obtenemos la dirección del usuario
-        cart_items = Cart.objects.filter(user=user)  # Obtenemos los productos en el carrito
-        famount = 0  # Inicializamos la cantidad total de la compra
-
-        # Calculamos el monto total sumando el precio de cada producto en el carrito
+        user=request.user
+        add=Customer.objects.filter(user=user)
+        cart_items=Cart.objects.filter(user=user)
+        famount = 0
         for p in cart_items:
             value = p.cantidad * p.product.precio_con_descuento
             famount = famount + value
-
-        # Añadimos un cargo adicional (por ejemplo, envío) y calculamos el monto total
         totalamount = famount + 2
-
-        # Convertimos el monto a la moneda de Razorpay (se multiplica por 100)
         razoramount = int(totalamount * 100)
-
-        # Creamos un cliente Razorpay con las claves de autenticación desde los settings
         client = razorpay.Client(auth=(settings.RAZOR_KEY_ID, settings.RAZOR_KEY_SECRET))
-
-        # Definimos los datos para la creación de la orden en Razorpay
-        data = { 
-            "amount": razoramount, 
-            "currency": "INR",  # La moneda es INR (rupias)
-            "receipt": "order_rcptid_12"  # Número de recibo de la orden
-        }
-
-        # Creamos la orden en Razorpay
+        data = { "amount": razoramount, "currency": "INR", "receipt": "order_rcptid_12" }
         payment_response = client.order.create(data=data)
         print(payment_response)
-
-        # Extraemos el ID y el estado de la orden
         order_id = payment_response['id']
         order_status = payment_response['status']
-
-        # Si la orden se ha creado con éxito, guardamos la información de pago en la base de datos
         if order_status == 'created':
             payment = Payment(
                 user=user,
@@ -296,59 +271,53 @@ class checkout(View):
             )
             payment.save()
 
-        # Ahora configuramos un formulario para pagos mediante PayPal
+        # Crear un nuevo formulario de PayPal con librería paypal-django
         host = request.get_host()
         paypal_dict = {
             'business': settings.PAYPAL_RECEIVER_EMAIL,
             'amount': str(totalamount),
             'item_name': 'Producto',
-            'invoice': str(uuid.uuid4()),  # Generamos un ID único para la factura
-            'currency_code': 'USD',  # Pagos en USD
-            'notify_url': f'http://{host}{reverse("paypal-ipn")}',  # URL para recibir notificaciones de PayPal
-            'return_url': f'http://{host}{reverse("paypal-return")}',  # URL de retorno si el pago es exitoso
-            'cancel_return': f'http://{host}{reverse("paypal-cancel")}',  # URL si el pago es cancelado
+            'invoice': str(uuid.uuid4()),
+            'currency_code': 'USD',
+            'notify_url': f'http://{host}{reverse("paypal-ipn")}',
+            'return_url': f'http://{host}{reverse("paypal-return")}',
+            'cancel_return': f'http://{host}{reverse("paypal-cancel")}',
         }
-
-        # Creamos el formulario de PayPal
         paypal_form = PayPalPaymentsForm(initial=paypal_dict)
-
-        # Renderizamos la vista de checkout con todos los datos necesarios
         return render(request, 'app/checkout.html',locals())
 
-# Redirigimos al usuario a la lista de órdenes después de un pago exitoso
 def paypal_return(request):
     return redirect('orders')  
 
-# Si el pago se cancela, mostramos un mensaje de error
 def paypal_cancel(request):
     messages.error(request, 'Tu pago no se realizó')
     return redirect('checkout')  
 
-# Vista que se activa cuando se completa un pago exitoso en Razorpay
 @login_required
 def payment_done(request):
     order_id = request.GET.get('order_id')
     payment_id = request.GET.get('payment_id')
     cust_id = request.GET.get('cust_id')
 
-    user = request.user  # Usuario que hizo la compra
-    customer = Customer.objects.get(id=cust_id)  # Obtenemos los datos del cliente
+    user = request.user
+    customer = Customer.objects.get(id=cust_id)
 
-    # Buscamos el pago y lo marcamos como realizado
-    payment = Payment.objects.get(razorpay_order_id=order_id)
+    try:
+        payment = Payment.objects.get(razorpay_order_id=order_id)
+    except Payment.DoesNotExist:
+        raise Http404("El pago no existe para el order_id recibido")
+
     payment.paid = True
     payment.razorpay_payment_id = payment_id
     payment.save()
 
-    # Creamos las órdenes de compra y eliminamos los productos del carrito
     cart = Cart.objects.filter(user=user)
     for c in cart:
         OrderPlaced(user=user, customer=customer, product=c.product, cantidad=c.cantidad, payment=payment).save()
-        c.delete()  # Eliminamos el producto del carrito después de la compra
+        c.delete()
 
     return redirect("orders")
 
-# Vista para ver las órdenes del usuario
 @login_required
 def orders(request):
     totalitem = 0
@@ -356,9 +325,9 @@ def orders(request):
     if request.user.is_authenticated:
         totalitem = len(Cart.objects.filter(user=request.user))
         wishitem = len(Wishlist.objects.filter(user=request.user))
-    # Obtenemos todas las órdenes del usuario
-    order_placed = OrderPlaced.objects.filter(user=request.user)
-    return render(request, 'app/orders.html', locals())
+    order_placed=OrderPlaced.objects.filter(user=request.user)
+    return render(request, 'app/orders.html',locals())
+
 
 # Función para incrementar la cantidad de un producto en el carrito
 def plus_cart(request):

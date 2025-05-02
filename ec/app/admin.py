@@ -2,7 +2,8 @@ from django.contrib import admin
 from .models import Cart, Customer, OrderPlaced, Payment, Product, Wishlist, ContactMessage
 from django.utils.html import format_html
 from django.urls import reverse
-from django.contrib.auth.models import Group
+from django.contrib.auth.models import Group, User
+from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 
 # Registro del modelo Product en el panel de administración
 @admin.register(Product)
@@ -14,7 +15,7 @@ class ProductModelAdmin(admin.ModelAdmin):
 @admin.register(Customer)
 class CustomerModelAdmin(admin.ModelAdmin):
     # Campos a mostrar en la lista de administración de clientes
-    list_display = ['id', 'user', 'direccion', 'telefono', 'ciudad', 'identificacion']
+    list_display = ['id_cliente', 'user', 'nombre', 'direccion', 'telefono', 'departamento', 'identificacion', 'ciudad']
 
 # Registro del modelo Cart en el panel de administración
 @admin.register(Cart)
@@ -72,5 +73,16 @@ class ContactMessageAdmin(admin.ModelAdmin):
     # Campos a mostrar en la lista de administración de mensajes de contacto
     list_display = ['nombre', 'apellidos', 'telefono', 'celular', 'identificacion', 'tipo_caso', 'asunto', 'numero_factura', 'descripcion']
 
+# Personalización del administrador de usuarios de Django para mostrar el ID
+class CustomUserAdmin(BaseUserAdmin):
+    # Campos a mostrar en la lista de administración de usuarios
+    list_display = ('id', 'username', 'email', 'first_name', 'last_name', 'is_staff')
+
 # Eliminación del grupo predeterminado de Django del panel de administración
 admin.site.unregister(Group)
+
+# Eliminación del administrador original de usuarios
+admin.site.unregister(User)
+
+# Registro del modelo User con la nueva configuración que incluye el ID
+admin.site.register(User, CustomUserAdmin)

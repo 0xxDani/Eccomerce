@@ -5,6 +5,7 @@ from django.conf.urls.static import static
 from django.conf import settings
 from django.contrib.auth import views as auth_view
 from .forms import LoginForm, MyPasswordResetForm, MyPasswordChangeForm, MySetPasswordForm
+from django.urls import path, include
 
 urlpatterns = [
     #Endpoints de las páginas principales
@@ -53,7 +54,13 @@ urlpatterns = [
     path('password-reset-confirm/<uidb64>/<token>/', auth_view.PasswordResetConfirmView.as_view(template_name='app/password_reset_confirm.html', form_class=MySetPasswordForm), name='password_reset_confirm'),
     path('password-reset-complete/', auth_view.PasswordResetCompleteView.as_view(template_name='app/password_reset_complete.html'), name='password_reset_complete'),
 
+    #CONEXIÓN A LAS APIS
+    path('api/', include('app.api.urls')),
+
+    
+
 ]+static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+
 
 #Configurar nombre del administrador
 admin.site.site_header = "Astral Shop Administrador"

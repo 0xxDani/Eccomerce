@@ -125,7 +125,7 @@ class Product(models.Model):
     referencia = models.TextField(default='')  # Referencia o código del producto
     pais_origen = models.CharField(choices=COUNTRY_CHOICES, max_length=60)  # País de origen del producto
     categoria = models.CharField(choices=CATEGORY_CHOICES, max_length=2)  # Categoría del producto
-    imagen_producto = models.ImageField(upload_to='product')  # Imagen del producto
+    imagen_producto = models.ImageField(upload_to='product', blank=True, null=True)
 
     class Meta:
         verbose_name_plural = "Productos"  # Nombre plural en el panel de administración
@@ -136,6 +136,7 @@ class Product(models.Model):
 # Clase Customer: Representa a los clientes o administradores del sistema.
 class Customer(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)  # Relación con el usuario de Django
+    id_cliente = models.IntegerField(default=0)  # NUEVO CAMPO: Número de ID manual para el cliente
     nombre = models.CharField(max_length=200)  # Nombre del cliente
     direccion = models.CharField(max_length=200)  # Dirección del cliente
     telefono = models.IntegerField(default=0)  # Número de teléfono
@@ -148,6 +149,7 @@ class Customer(models.Model):
 
     def __str__(self):
         return self.nombre  # Representación del cliente por su nombre
+
 
 # Clase Cart: Representa el carrito de compras de un usuario.
 class Cart(models.Model):

@@ -1,29 +1,22 @@
-{% extends 'app/base.html' %}  <!-- Extiende la plantilla base para usar la estructura general de la página -->
+{% extends 'app/base.html' %}
+{% load static %}
+{% block title %}Checkout | Lili Fashion{% endblock title %}
 
-{% load static %}  <!-- Carga las etiquetas estáticas para poder usar archivos como imágenes, hojas de estilo, etc. -->
-
-{% block title %}Checkout | Lili Fashion{% endblock title %}  <!-- Define el título específico para esta página, que se inserta en el bloque 'title' de la plantilla base -->
-
-{% block main-content %}  <!-- Inicia el bloque de contenido principal que será insertado en la plantilla base -->
-
-<!-- Contenedor principal con un margen adecuado -->
+{% block main-content %}
 <div class="container">
-    <!-- Verifica si existen mensajes y los muestra -->
     {% if messages %}
         {% for msg in messages %}
             <div class="alert alert-danger" role="alert">
-                {{msg}}  <!-- Muestra el mensaje dentro de una alerta de Bootstrap -->
+                {{msg}}
             </div>
         {% endfor %}
     {% endif %}
 
-    <!-- Fila que contiene la información de pago y las opciones de dirección -->
     <div class="row mt-5">
         <div class="col-sm-6">
             <h4>Información de pago</h4>
             <hr>
 
-            <!-- Itera sobre los artículos del carrito y muestra sus detalles -->
             {% for item in cart_items %}
             <div class="card mb-2">
                 <div class="card-body">
@@ -34,55 +27,29 @@
             </div>
             {% endfor%}
 
-            <!-- Muestra el total de la compra, incluyendo el costo de envío -->
             <p class="fw-bold">Suma total:+ $2 (envío) = {{totalamount}}</p>
-            
-            <!-- Términos y condiciones de compra -->
+
             <small>**Términos y Condiciones de Compra**<br>
-                <!-- Lista los puntos de los términos y condiciones -->
                 1. **Pago y Precios:**<br>
-                   - Todos los precios están en la moneda local y se mostrarán durante el proceso de pago.<br>
-                   - Los pagos son procesados de manera segura a través de nuestro proveedor de pagos.<br>
+                - Todos los precios están en la moneda local y se mostrarán durante el proceso de pago.<br>
+                - Los pagos son procesados de manera segura a través de nuestro proveedor de pagos.<br>
 
-                2. **Envío:**<br>
-                   - El tiempo estimado de envío se proporcionará durante el proceso de compra.<br>
-                   - Los costos de envío variarán según la ubicación y la opción de envío seleccionada.<br>
+             2. **Envío:**<br>
+                - El tiempo estimado de envío se proporcionará durante el proceso de compra.<br>
+                - Los costos de envío variarán según la ubicación y la opción de envío seleccionada.<br>
 
-                3. **Devoluciones y Reembolsos:**<br>
-                   - Aceptamos devoluciones dentro de los 30 días posteriores a la recepción del producto.<br>
-                   - Los productos deben devolverse en su estado original para ser elegibles para un reembolso.<br>
-
-                4. **Privacidad y Seguridad:**<br>
-                   - La información del cliente se manejará de manera confidencial y segura.<br>
-                   - No compartiremos su información con terceros sin su consentimiento.<br>
-
-                5. **Garantía del Producto:**<br>
-                   - Ofrecemos garantía en nuestros productos según las condiciones especificadas en cada artículo.<br>
-
-                6. **Cancelaciones:**<br>
-                   - Las cancelaciones pueden realizarse antes de que se envíe el producto.<br>
-                   - Se aplicará una tarifa de cancelación después de que se haya enviado el producto.<br>
-
-                7. **Responsabilidad del Usuario:**<br>
-                   - El usuario es responsable de proporcionar información precisa durante el proceso de compra.<br>
-                   - Cualquier actividad fraudulenta resultará en acciones legales.<br>
-
-                8. **Cambios en los Términos:**<br>
-                   - Nos reservamos el derecho de realizar cambios en estos términos en cualquier momento.<br>
-                   - Los cambios entrarán en vigencia inmediatamente después de su publicación.<br>
-                Al realizar una compra, el cliente acepta estos términos y condiciones. Para obtener más detalles, contáctenos en [0xsnake55@gmail.com] o llámenos al [3017753925].<br>
+             3. **Devoluciones y Reembolsos:**<br>
+                - Aceptamos devoluciones dentro de los 30 días posteriores a la recepción del producto.<br>
+                - Los productos deben devolverse en su estado original para ser elegibles para un reembolso.<br>
             </small>
         </div>
 
-        <!-- Columna para seleccionar la dirección de envío -->
         <div class="col-sm-4 offset-sm-1">
             <h4>Selecciona dirección de envío</h4>
             <hr>
-            <!-- Formulario para elegir la dirección de envío y procesar el pago -->
             <form method="post" id="myform">
                 {% csrf_token %}
                 
-                <!-- Itera sobre las direcciones disponibles y las muestra como opciones de radio -->
                 {% for ad in add %}
                 <div class="card">
                     <div class="card-body">
@@ -92,66 +59,91 @@
                     </div>
                 </div>
                 <div class="form-check mt-2 mb-5">
-                    <input type="radio" class="form-check-input" name="custid" id="custadd{{forloop.counter}}" value="{{ad.id}}">
+                    <input type="radio" class="form-check-input address-radio" name="custid" id="custadd{{forloop.counter}}" value="{{ad.id}}">
                     <label class="form-check-label fw-bold" for="custadd{{forloop.counter}}">
-                        Dirección:{{forloop.counter}} </label> <!-- Asigna una dirección de envío para elegir -->
+                        Dirección:{{forloop.counter}}
+                    </label>
                 </div>
                 {% endfor %}
-                
-                <!-- Muestra el total neto a pagar -->
-                <div class="form-check mb-3">
-                    <!-- <label for="totamount" class="form-label">Neto a pagar:</label>
-                    <input type="number" class="form-control" name="totamount" value={{totalamount}} readonly>  Muestra el total calculado de la compra -->
-                </div>
 
-                <!-- Botón para procesar el pago con Razorpay -->
-                <!-- <div id="rzp-button1-container" class="text-center">
+                <!-- Razorpay -->
+                <div id="rzp-button1-container" class="text-center">
                     <button id="rzp-button1" type="submit" class="btn px-5">
                         <img src="{% static 'assets/images/icons/razorpay.svg' %}" alt="Razorpay Icon" class="razorpay-icon">  
                     </button>
-                </div> -->
+                </div> 
             </form>
-            
-            <!-- Sección para PayPal -->
+
+            <!-- PayPal -->
             <div id="paypal-container">
-                <img src="{% static 'assets/images/icons/paypal.svg' %}" alt="PayPal">  <!-- Icono de PayPal -->
-                {{ paypal_form.render }}  <!-- Renderiza el formulario de PayPal -->
+                <img src="{% static 'assets/images/icons/paypal.svg' %}" alt="PayPal">
+                <div id="paypal-form-container">
+                    {{ paypal_form.render }}
+                </div>
             </div>
         </div>
     </div>
 </div>
-
 {% endblock main-content %}
 
-{% block payment-gateway %}  <!-- Bloque para configurar el proceso de pago con Razorpay -->
+
+{% block payment-gateway %}
 <script>
-var options = {
-    "key": "rzp_test_V3NdXPh72wKeN8",  // Clave de Razorpay
-    "amount": "{{razoramount}}",  // Monto a pagar
-    "currency": "INR",  // Moneda
-    "name": "Tienda",
-    "descripcion": "Comprar productos",
-    "order_id": "{{order_id}}",  // ID del pedido
-    "handler": function (response){  // Acción a realizar cuando el pago se complete
-        console.log("Exitoso por aquí en el pago de razor pay");
-        var form = document.getElementById("myform");
-        // Redirige a la página de pago completado con los detalles del pago
-        window.location.href = `http://localhost:8000/paymentdone?order_id=${response.razorpay_order_id}&payment_id=${response.razorpay_payment_id}&cust_id=${form.elements["custid"].value}`
-    },
-
-    "theme": {
-        "color": "#3399cc"  // Define el color del tema
+    // ⚠️ VALIDACIÓN: revisar si se seleccionó una dirección
+    function isAddressSelected() {
+        const radios = document.querySelectorAll('input[name="custid"]');
+        for (let i = 0; i < radios.length; i++) {
+            if (radios[i].checked) {
+                return true;
+            }
+        }
+        return false;
     }
-};
-var rzp1 = new Razorpay(options);
-rzp1.on('payment.failed', function (response){
-    alert(response.error.descripcion);  // Muestra un error si el pago falla
-});
-document.getElementById('rzp-button1').onclick = function(e){
-    console.log("Botón clikeado");
-    rzp1.open();  // Abre la ventana de Razorpay
-    e.preventDefault();
-}
-</script>
 
-{% endblock payment-gateway %}  <!-- Finaliza el bloque de configuración de pago -->
+    // ⚠️ Razorpay configuración
+    var options = {
+        "key": "rzp_test_V3NdXPh72wKeN8",
+        "amount": "{{razoramount}}",
+        "currency": "INR",
+        "name": "Tienda",
+        "descripcion": "Comprar productos",
+        "order_id": "{{order_id}}",
+        "handler": function (response){
+            var form = document.getElementById("myform");
+            window.location.href = `http://localhost:8000/paymentdone?order_id=${response.razorpay_order_id}&payment_id=${response.razorpay_payment_id}&cust_id=${form.elements["custid"].value}`
+        },
+        "theme": {
+            "color": "#3399cc"
+        }
+    };
+
+    var rzp1 = new Razorpay(options);
+    rzp1.on('payment.failed', function (response){
+        alert(response.error.descripcion);
+    });
+
+    // ⚠️ BOTÓN RAZORPAY
+    document.getElementById('rzp-button1').onclick = function(e){
+        if (!isAddressSelected()) {
+            alert("Por favor selecciona una dirección de envío antes de continuar con el pago.");
+            e.preventDefault(); // ❌ No abrir Razorpay si no hay dirección
+            return;
+        }
+        rzp1.open();
+        e.preventDefault();
+    };
+
+    // ⚠️ BLOQUEO PARA PAYPAL si no hay dirección
+    document.addEventListener('DOMContentLoaded', function () {
+        const paypalForm = document.querySelector('#paypal-container form');
+        if (paypalForm) {
+            paypalForm.addEventListener('submit', function(e) {
+                if (!isAddressSelected()) {
+                    alert("Por favor selecciona una dirección de envío antes de pagar con PayPal.");
+                    e.preventDefault();
+                }
+            });
+        }
+    });
+</script>
+{% endblock payment-gateway %}
